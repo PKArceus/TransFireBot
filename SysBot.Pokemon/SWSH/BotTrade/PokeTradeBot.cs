@@ -66,12 +66,12 @@ namespace SysBot.Pokemon
             {
                 await InitializeHardware(Hub.Config.Trade, token).ConfigureAwait(false);
 
-                Log("Identifying trainer data of the host console.");
+                Log("识别主机控制台的训练器数据.");
                 var sav = await IdentifyTrainer(token).ConfigureAwait(false);
                 RecentTrainerCache.SetRecentTrainer(sav);
                 await InitializeSessionOffsets(token).ConfigureAwait(false);
 
-                Log($"Starting main {nameof(PokeTradeBot)} loop.");
+                Log($"正在启动 {nameof(PokeTradeBot)} 循环.");
                 await InnerLoop(sav, token).ConfigureAwait(false);
             }
             catch (Exception e)
@@ -79,7 +79,7 @@ namespace SysBot.Pokemon
                 Log(e.Message);
             }
 
-            Log($"Ending {nameof(PokeTradeBot)} loop.");
+            Log($"正在结束 {nameof(PokeTradeBot)} 循环.");
             await HardStop().ConfigureAwait(false);
         }
 
@@ -123,7 +123,7 @@ namespace SysBot.Pokemon
             while (!token.IsCancellationRequested && Config.NextRoutineType == PokeRoutineType.Idle)
             {
                 if (waitCounter == 0)
-                    Log("No task assigned. Waiting for new task assignment.");
+                    Log("未分配任务。等待新任务分配.");
                 waitCounter++;
                 if (waitCounter % 10 == 0 && Hub.Config.AntiIdle)
                     await Click(B, 1_000, token).ConfigureAwait(false);
@@ -149,7 +149,7 @@ namespace SysBot.Pokemon
 
                 detail.IsProcessing = true;
                 string tradetype = $" ({detail.Type})";
-                Log($"Starting next {type}{tradetype} Bot Trade. Getting data...");
+                Log($"开始下一个 {type}{tradetype} 机器人交易，获取数据...");
                 Hub.Config.Stream.StartTrade(this, detail, Hub);
                 Hub.Queues.StartTrade(this, detail);
 
@@ -163,7 +163,7 @@ namespace SysBot.Pokemon
             {
                 // Updates the assets.
                 Hub.Config.Stream.IdleAssets(this);
-                Log("Nothing to check, waiting for new users...");
+                Log("没有要检查的，等待新用户...");
             }
 
             const int interval = 10;
@@ -261,17 +261,17 @@ namespace SysBot.Pokemon
 
             while (await CheckIfSearchingForLinkTradePartner(token).ConfigureAwait(false))
             {
-                Log("Still searching, resetting bot position.");
+                Log("仍在搜索，重置机器人位置.");
                 await ResetTradePosition(token).ConfigureAwait(false);
             }
 
-            Log("Opening Y-Comm menu.");
+            Log("打开Y-Comm菜单.");
             await Click(Y, 2_000, token).ConfigureAwait(false);
 
-            Log("Selecting Link Trade.");
+            Log("选择链接交易.");
             await Click(A, 1_500, token).ConfigureAwait(false);
 
-            Log("Selecting Link Trade code.");
+            Log("选择链接交易代码.");
             await Click(DDOWN, 500, token).ConfigureAwait(false);
 
             for (int i = 0; i < 2; i++)
@@ -287,7 +287,7 @@ namespace SysBot.Pokemon
             await Task.Delay(Hub.Config.Timings.ExtraTimeOpenCodeEntry, token).ConfigureAwait(false);
 
             var code = poke.Code;
-            Log($"Entering Link Trade code: {code:0000 0000}...");
+            Log($"输入链接交易代码: {code:0000 0000}...");
             await EnterLinkCode(code, Hub.Config, token).ConfigureAwait(false);
 
             // Wait for Barrier to trigger all bots simultaneously.
@@ -519,12 +519,12 @@ namespace SysBot.Pokemon
             var tradeswsh = new LegalityAnalysis(cln);
             if (tradeswsh.Valid)
             {
-                Log($"宝可梦有效，使用用户信息");
+                Log($"自ID后合法，使用用户信息");
                 await SetBoxPokemon(cln, 0, 0, token, sav).ConfigureAwait(false);
             }
             else
             {
-                Log($"宝可梦信息无效，不交换宝可梦");
+                Log($"自ID后不合法，不修改宝可梦信息");
             }
 
             return tradeswsh.Valid;
@@ -542,7 +542,7 @@ namespace SysBot.Pokemon
             if (cooldown != null)
             {
                 var delta = DateTime.Now - cooldown.Time;
-                Log($"Last saw {user.TrainerName} {delta.TotalMinutes:F1} minutes ago (OT: {TrainerName}).");
+                Log($"上次连接 {user.TrainerName} {delta.TotalMinutes:F1} 分钟前 (OT: {TrainerName}).");
 
                 var cd = AbuseSettings.TradeCooldown;
                 if (cd != 0 && TimeSpan.FromMinutes(cd) > delta)
@@ -649,7 +649,7 @@ namespace SysBot.Pokemon
 
         protected virtual async Task<bool> WaitForTradePartnerOffer(CancellationToken token)
         {
-            Log("Waiting for trainer...");
+            Log("等待训练家...");
             return await WaitForPokemonChanged(LinkTradePartnerPokemonOffset, Hub.Config.Trade.TradeWaitTime * 1_000, 0_200, token).ConfigureAwait(false);
         }
 
@@ -735,7 +735,7 @@ namespace SysBot.Pokemon
                 clone.Tracker = 0;
 
             poke.SendNotification(this, $"***Cloned your {GameInfo.GetStrings(1).Species[clone.Species]}!***\nNow press B to cancel your offer and trade me a Pokémon you don't want.");
-            Log($"Cloned a {(Species)clone.Species}. Waiting for user to change their Pokémon...");
+            Log($"克隆了 {(Species)clone.Species}. 等待用户更改他们的神奇宝贝...");
 
             // Separate this out from WaitForPokemonChanged since we compare to old EC from original read.
             var partnerFound = await ReadUntilChanged(LinkTradePartnerPokemonOffset, oldEC, 15_000, 0_200, false, token).ConfigureAwait(false);
@@ -808,7 +808,7 @@ namespace SysBot.Pokemon
         // For pointer offsets that don't change per session are accessed frequently, so set these each time we start.
         private async Task InitializeSessionOffsets(CancellationToken token)
         {
-            Log("Caching session offsets...");
+            Log("缓存会话偏移量...");
             OverworldOffset = await SwitchConnection.PointerAll(Offsets.OverworldPointer, token).ConfigureAwait(false);
         }
 
